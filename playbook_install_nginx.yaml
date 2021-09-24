@@ -1,0 +1,35 @@
+- hosts: Docker_Key
+  become: true
+
+  tasks:
+    - name: Ensure nginx directory on docker host
+      file:
+        state: directory
+        owner: 1000
+        group: 1000
+        path: "{{ item }}"
+      loop:
+      - /opt/nginx
+      - /opt/nginx/conf.d
+      tags:
+      - [ nginx ]
+
+    - name: Copy nginx.conf to nginx container
+      copy:
+        src: Files/nginx/nginx.conf
+        dest: /opt/nginx/
+        owner: root
+        group: root
+        force: yes
+      tags:
+      - [ nginx ]
+
+    - name: Copy airflow.conf to nginx container
+      copy:
+        src: Files/nginx/airflow.conf
+        dest: /opt/nginx/conf.d/
+        owner: root
+        group: root
+        force: yes
+      tags:
+      - [ airflow ]

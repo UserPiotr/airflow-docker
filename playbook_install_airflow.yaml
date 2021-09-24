@@ -1,0 +1,63 @@
+- hosts: Docker_Key
+  become: true
+
+  tasks:
+    - name: Create a .env file.
+      shell: echo "AIRFLOW_UID=1000\nAIRFLOW_GID=0" > .env
+      args:
+        chdir: /opt/airflow/
+      tags:
+      - [ create ]
+
+    - name: Create necessary directories if it does not exist.
+      file:
+        path: /opt/airflow/{{ item }}
+        state: directory
+        mode: '0755'
+      loop:
+      - cert
+      - config
+      - scripts
+      - .plugins
+      - .dags
+      - .logs
+      tags:
+      - [ create ]
+
+    - name: copy docker file/s
+      copy:
+        src: Files/{{ item }}
+        dest: /opt/airflow/{{ item }}
+      loop:
+      - docker-compose.yaml
+      - Dockerfile
+      tags:
+      - [ docker ]
+
+    - name: copy script file/s
+      copy:
+        src: Files/scripts/{{ item }}
+        dest: /opt/airflow/scripts/{{ item }}
+      loop:
+      - msodbcsql.sh
+      tags:
+      - [ sql ]
+
+    - name: copy certs file/s
+      copy:
+        src: Files/certs/{{ item }}
+        dest: /opt/airflow/certs/{{ item }}
+      loop:
+      - OTCF.crt
+      - OTCF.key
+      tags:
+      - [ cert ]
+
+    - name: copy config file/s
+      copy:
+        src: Files/config/{{ item }}
+        dest: /opt/airflow/config/{{ item }}
+      loop:
+      - airflow.cfg
+      tags:
+      - [ config ]
